@@ -1,14 +1,20 @@
+// IMPORT PACKAGES
+
 const inquirer = require("inquirer");
 const connection = require(".db/connection.js");
-const { allowedNodeEnvironmentFlags } = require("process");
+const { allowedNodeEnvironmentFlags, exit } = require("process");
 require("console.table");
+
+
+// CREATE MENU
 
 const menu = () => {
     console.log("EMPLOYEE TRACKER");
-    inquirer.createPromptModule({
+    inquirer.prompt([
+        {
         name: "start",
         type: "list",
-        message: "Please choose an action",
+        message: "What would you like to do? ",
         choices: [
             "View all departments",
             "View all roles",
@@ -19,7 +25,8 @@ const menu = () => {
             "Update an employee role",
             "Exit",
         ],
-    })
+    }
+])  
     .then((answer) => {
         switch (answer.start) {
             case "View all departments":
@@ -49,9 +56,22 @@ const menu = () => {
             case "Update an employee role":
                 UpdateEmployeeRole();
                 break;
+
+            case "Exit":
+                Exit();
+                break;
         }
     });
 };
 
+
 // VIEW ALL DEPARTMENTS
 
+const query = `SELECT
+employee.id,
+employee.first_name,
+employee.last_name,
+employee.title,
+employee.department,
+employee.salary,
+employee.manager
