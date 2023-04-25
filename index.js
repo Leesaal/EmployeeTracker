@@ -1,8 +1,8 @@
 // IMPORT PACKAGES
 
+const e = require("express");
 const inquirer = require("inquirer");
-const connection = require(".db/connection.js");
-const { allowedNodeEnvironmentFlags, exit } = require("process");
+const connection = require("./db/connection.js");
 require("console.table");
 
 
@@ -30,35 +30,35 @@ const menu = () => {
     .then((answer) => {
         switch (answer.start) {
             case "View all departments":
-                ViewAllDepartments();
+                viewAllDepartments();
                 break;
 
             case "View all roles":
-                ViewAllRoles();
+                viewAllRoles();
                 break;
             
             case "View all employees":
-                ViewAllEmployees();
+                viewAllEmployees();
                 break;
 
             case "Add a department":
-                AddDepartment();
+                addDepartment();
                 break;
 
             case "Add a role":
-                AddRole();
+                addRole();
                 break;
 
             case "Add an employee":
-                AddEmployee();
+                addEmployee();
                 break;
             
             case "Update an employee role":
-                UpdateEmployeeRole();
+                updateEmployeeRole();
                 break;
 
             case "Exit":
-                Exit();
+                exit();
                 break;
         }
     });
@@ -67,11 +67,39 @@ const menu = () => {
 
 // VIEW ALL DEPARTMENTS
 
-const query = `SELECT
-employee.id,
-employee.first_name,
-employee.last_name,
-employee.title,
-employee.department,
-employee.salary,
-employee.manager
+function viewAllDepartments() {
+    const query = `SELECT department.id, department.name
+    FROM department;`;
+    connection
+    .promise()
+    .query(query)
+    .then((data) => {
+        console.table(data[0]);
+        menu();
+    })  
+};
+
+
+// VIEW ALL ROLES
+
+function viewAllRoles() {
+    const query = `SELECT role.id, role.title, role.salary, department.name AS department
+    FROM role
+    LEFT JOIN department ON
+    role.department_id = department.id;`;
+    connection
+    .promise()
+    .query(query)
+    .then((data) => {
+        console.table(data[0]);
+        menu();
+    })
+}
+
+// VIEW ALL EMPLOYEES
+
+function viewAllEmployees() {
+    
+}
+
+menu();
