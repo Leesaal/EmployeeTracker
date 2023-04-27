@@ -145,17 +145,20 @@ function addDepartment() {
 // ADD A ROLE
 
 function addRole() {
+
+
+        // CREATE DEPARTMENT NAMES LIST
+
     const query = `SELECT department.name
     FROM department`;
     connection
     .query(query, (err, data) => {
         if (err) throw err;
-    
-
-        // CREATE DEPARTMENT NAMES LIST
-
         const departmentNames = data.map((item) => `${item.name}`);
+
     
+    // CREATE NEW ROLE QUESTIONS
+
     inquirer
     .prompt([
         {
@@ -175,17 +178,16 @@ function addRole() {
             choices: [...departmentNames],
         }
     ])
-    .then(function (answer) {
-        const query = `INSERT INTO role 
-        SET ?`
+    .then(function (data) {
+        const { title, salary, department_name } = data;
         connection
-        .query(query, {
-            title: answer.title,
-            salary: answer.salary,
-            department_id: answer.department_name
-        },
-        function (err, res) {
-            
+        .query(
+        `INSERT INTO role (title, salary, department_id) VALUES (?, ?,?)`, 
+        // [data.title, data.salar, data.department_name],)
+        //     SELECT department.id
+        //     FROM department
+        //     WHERE department.name = department_name`,
+        (err, res) => {
             console.table(res);
             console.log("New role added");
             viewAllRoles();
@@ -200,7 +202,45 @@ function addRole() {
 // ADD AN EMPLOYEE
 
 function addEmployee() {
-    const query = `SELECT role`
+    const query = `SELECT role.title
+    FROM role`;
+    connection
+    .query(query, (err, data) => {
+        if (err) throw err;
+        const roleTitles = data.map((item) => `${item.name}`);
+    });  
+    const query2 = `SELECT employee.first_name, employee.last_name
+    FROM employee`;
+    connection
+    .query(query2, (err, data) => {
+        if (err) throw err;
+        const managers = data.map((item) => `${item.name}`);
+    }); 
+    inquirer
+    .prompt([
+        {
+            type: "input",
+            name: "first_name",
+            message: "What is the employee's first name? ",
+        },
+        {
+            type: "input",
+            name: "last_name",
+            message: "What is the employee's last name? ",
+        },
+        {
+            type: "list",
+            name: "role",
+            message: "What is the employee's role? ",
+            choices: [...roleTitles], 
+        },
+        {
+            type: "list",
+            name: "manager",
+            message: "Who is the employee's manager? ",
+            choices: [...managers],
+        }
+    ])
 }
 
 
