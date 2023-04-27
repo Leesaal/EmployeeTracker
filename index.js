@@ -2,6 +2,7 @@
 
 const e = require("express");
 const inquirer = require("inquirer");
+const { exit } = require("process");
 const connection = require("./db/connection.js");
 require("console.table");
 
@@ -58,7 +59,7 @@ const menu = () => {
                 break;
 
             case "Exit":
-                exit();
+                Exit();
                 break;
         }
     });
@@ -96,10 +97,129 @@ function viewAllRoles() {
     })
 }
 
+
 // VIEW ALL EMPLOYEES
 
 function viewAllEmployees() {
-    
+    const query = `SELECT role.id, employee.first_name, employee.last_name, role.title, department.name AS department, role.salary, CONCAT(manager.first_name, ' ', manager.last_name) AS manager FROM employee
+    LEFT JOIN role ON employee.role_id = role.id
+    LEFT JOIN department ON role.department_id = department.id
+    LEFT JOIN employee manager ON manager.id = employee.manager_id;`;
+    connection
+    .promise()
+    .query(query)
+    .then((data) => {
+        console.table(data[0]);
+        menu();
+    })
 }
+
+
+// ADD A DEPARTMENT
+
+function addDepartment() {
+    inquirer
+    .prompt([
+        {
+            type: "input",
+            name: "name",
+            message: "What is the name of the department? ",
+        },
+    ])
+    .then((data) => {
+        const { name } = data;
+        connection
+        .query(
+            `INSERT INTO department (name) VALUES (?)`, 
+            [name],
+            (err, res)  => {
+                if (err) throw err;
+                console.log(`Department ${name} now added`);
+                viewAllDepartments();
+            }
+        );
+    });
+}
+
+
+// ADD A ROLE
+
+function addRole() {
+    const query = `SELECT department.name
+    FROM department`;
+    connection
+    .query(query, (err, data) => {
+        if (err) throw err;
+    
+
+        // CREATE DEPARTMENT NAMES LIST
+
+        const departmentNames = data.map((item) => `${item.name}`);
+    
+    inquirer
+    .prompt([
+        {
+            type: "input",
+            name: "title",
+            message: "What is the name of the role? ",
+        },
+        {
+            type: "input",
+            name: "salary",
+            message: "What is the salary of the role? ",
+        },
+        {
+            type: "list",
+            name: "department_name",
+            message: "Which department does the role belong to? ",
+            choices: [...departmentNames],
+        }
+    ])
+    .then(function (answer) {
+        const query = `INSERT INTO role 
+        SET ?`
+        connection
+        .query(query, {
+            title: answer.title,
+            salary: answer.salary,
+            department_id: answer.department_name
+        },
+        function (err, res) {
+            
+            console.table(res);
+            console.log("New role added");
+            viewAllRoles();
+        }
+        )}
+        );
+        });
+    };
+
+
+
+// ADD AN EMPLOYEE
+
+function addEmployee() {
+    const query = `SELECT role`
+}
+
+
+// UPDATE AN EMPLOYEE ROLE
+
+function updateEmployeeRole() {
+
+}
+
+
+// EXIT
+
+function Exit() {
+    console.log("Bye!");
+    connection
+    .end();
+}
+
+
+// SHOW MENU
 
 menu();
